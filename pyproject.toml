@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "python-zte-mc801a"
+version = "0.1.0"
+description = ""
+authors = ["Nicolas Jaccard <nicolas.jaccard@gmail.com>"]
+readme = "README.md"
+packages = [{include = "python_zte_mc801a"}]
+
+[tool.poetry.scripts]
+python-zte-mc801a = "python_zte_mc801a.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = {extras = ["all"], version = "^0.7.0"}
+requests = "^2.28.2"
+pyyaml = "^6.0"
+retry = "^0.9.2"
+termplotlib = "^0.3.9"
+
+
+[tool.poetry.group.dev.dependencies]
+black = {version = "^23.1a1", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

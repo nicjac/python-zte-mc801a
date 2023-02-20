@@ -2,3 +2,5 @@
 .vscode
 data.json
 settings.yml
+__pycache__
+__pycache__/*

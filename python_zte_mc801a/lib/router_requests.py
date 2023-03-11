@@ -2,7 +2,11 @@ import requests
 import hashlib
 import codecs
 from retry import retry
+from python_zte_mc801a.lib.data_processing import get_ad_value
+from python_zte_mc801a.lib.constants import ALL_DATA_FIELDS
 import logging
+
+log = logging.getLogger("rich")
 
 
 @retry(tries=3, delay=2)
@@ -49,58 +53,19 @@ def get_auth_cookies(router_ip: str, user_password: str) -> dict:
     return r_login.cookies.get_dict()
 
 
-def get_signal_data(router_ip, auth_cookies) -> dict:
+def get_signal_data(router_ip: str, auth_cookies: dict) -> dict:
     """Retrieve router data related to signals
 
     Args:
-        router_ip (_type_): IP (or hostname) of the router
-        auth_cookies (_type_): Authentication cookies obtained using `get_auth_cookies`
+        router_ip (str): IP (or hostname) of the router
+        auth_cookies (dict): Authentication cookies obtained using `get_auth_cookies`
 
     Returns:
         dict: Signal data dictionary (unprocessed)
     """
-    data_to_request = [
-        "lte_pci",
-        "lte_pci_lock",
-        "lte_earfcn_lock",
-        "lte_freq_lock",
-        "wan_ipaddr",
-        "wan_apn",
-        "pm_sensor_mdm",
-        "pm_modem_5g",
-        "nr5g_pci",
-        "nr5g_action_band",
-        "nr5g_action_channel",
-        "Z5g_SINR",
-        "Z5g_rsrp",
-        "wan_active_channel",
-        "wan_active_band",
-        "lte_multi_ca_scell_info",
-        "cell_id",
-        "dns_mode",
-        "prefer_dns_manual",
-        "standby_dns_manual",
-        "rmcc",
-        "rmnc",
-        "network_type",
-        "wan_lte_ca",
-        "lte_rssi",
-        "lte_rsrp",
-        "lte_snr",
-        "lte_rsrq",
-        "lte_ca_pcell_bandwidth",
-        "lte_ca_pcell_band",
-        "lte_ca_scell_bandwidth",
-        "lte_ca_scell_band",
-        "wa_inner_version",
-        "cr_version",
-        "RD",
-        "network_provider",
-        "signalbar",
-    ]
 
     r_data = requests.get(
-        f'http://{router_ip}/goform/goform_get_cmd_process?isTest=false&cmd={",".join(data_to_request)}&multi_data=1',
+        f'http://{router_ip}/goform/goform_get_cmd_process?isTest=false&cmd={",".join(ALL_DATA_FIELDS)}&multi_data=1',
         cookies=auth_cookies,
         headers={f"referer": f"http://{router_ip}/"},
     )
@@ -132,10 +97,53 @@ def get_latest_sms_messages(router_ip, auth_cookies, n=3) -> list:
     if len(messages) > n:
         messages = messages[0:n]
 
-    # Convert hex representation to binary
+    # Convert hex representation to ASCII
     for index, msg in enumerate(messages):
-        str_bytes = bytes(msg["content"], encoding="utf-8")
-        str_bin = codecs.decode(str_bytes, "hex")
-        messages[index]["content"] = str(str_bin, "utf-8")
+        messages[index]["content"] = str(
+            codecs.decode(msg["content"], "hex").replace(b"\x00", b""), "latin-1"
+        )
 
     return messages
+
+
+def set_5g_band(router_ip: str, auth_cookies: dict, bands: str) -> bool:
+    raw_data = get_signal_data(router_ip=router_ip, auth_cookies=auth_cookies)
+    ad = get_ad_value(raw_data)
+
+    headers = {
+        "Accept": "*/*",
+        "Accept-Language": "en-GB,en;q=0.9,f^r-FR;q=0.8,fr;q=0.7,en-US;q=0.6",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Origin": "http://192.168.0.1",
+        "Pragma": "no-cache",
+        "Referer": "http://192.168.0.1/",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.1518.70",
+        "X-Requested-With": "XMLHttpRequest",
+    }
+
+    request_data = {
+        "isTest": "false",
+        "goformId": "WAN_PERFORM_NR5G_BAND_LOCK",
+        "nr5g_band_mask": bands,
+        "AD": ad,
+    }
+
+    r = requests.post(
+        f"http://{router_ip}/goform/goform_set_cmd_process",
+        data=request_data,
+        cookies=auth_cookies,
+        headers=headers,
+    )
+
+    if (
+        r.status_code == 200
+        and "result" in r.json().keys()
+        and r.json()["result"] == "success"
+    ):
+        log.info(f"Successfully set 5G bands to {bands}")
+        return True
+    else:
+        log.error(f"Error setting 5G band to {bands}: {r.content}")
+        return False

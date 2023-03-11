@@ -1,4 +1,5 @@
 import math
+import hashlib
 
 
 def process_data(raw_data: dict) -> dict:
@@ -105,7 +106,7 @@ def process_5g_data(data: dict) -> dict:
 
     processed_data["RSRP"] = {
         "desc": "RSRP [Power]",
-        "str_value": f"{data['lte_rsrp']}dB",
+        "str_value": f"{data['Z5g_rsrp']}dB",
     }
 
     processed_data["SNR"] = {
@@ -229,3 +230,36 @@ def process_data_4g(data: dict) -> dict:
     }
 
     return processed_data
+
+
+def get_ad_value(raw_data: dict) -> str:
+    """Retrieve AD value for write operations
+
+    Args:
+        data (dict): Raw data
+
+    Returns:
+        str: AD value
+    """
+
+    # data_to_request = [
+    #     "wa_inner_version",
+    #     "cr_version",
+    #     "RD",
+    # ]
+
+    # r_data = requests.get(
+    #     f"http://{router_ip}/goform/goform_get_cmd_process?cmd=wa_inner_version,cr_version,RD&multi_data=1",
+    #     cookies=auth_cookies,
+    #     headers={f"referer": f"http://{router_ip}/"},
+    # )
+
+    # raw_data = r_data.json()
+
+    m = hashlib.md5()
+    m.update((raw_data["wa_inner_version"] + raw_data["cr_version"]).encode())
+
+    m2 = hashlib.md5()
+    m2.update((m.hexdigest() + raw_data["RD"]).encode())
+
+    return m2.hexdigest()

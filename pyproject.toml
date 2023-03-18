@@ -5,6 +5,8 @@ description = ""
 authors = ["Nicolas Jaccard <nicolas.jaccard@gmail.com>"]
 readme = "README.md"
 packages = [{include = "python_zte_mc801a"}]
+homepage = "https://github.com/nicjac/python-zte-mc801a"
+repository = "https://github.com/nicjac/python-zte-mc801a"
 
 [tool.poetry.scripts]
 python-zte-mc801a = "python_zte_mc801a.main:app"

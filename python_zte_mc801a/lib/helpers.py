@@ -9,7 +9,6 @@ from python_zte_mc801a.lib.constants import ALL_5G_BANDS
 import time
 import logging
 
-
 log = logging.getLogger("rich")
 
 
@@ -50,6 +49,7 @@ def force_5g_pci_selection(
     router_ip: str,
     auth_cookies: dict,
     bands_5g: list = ["78", ALL_5G_BANDS],
+    verbose: bool = True,
 ) -> bool:
     """Force selection of a 5G PCI site by alternatively forcing different bands. This is useful if, for example, the router tends to alternate between two PCIs, one significantly outperforming the other.
 
@@ -59,16 +59,19 @@ def force_5g_pci_selection(
         router_ip (str): Router IP
         auth_cookies (dict): Authentication cookies
         bands_5g (list, optional): The 5G bands to alternate between. Must be a list with two strings (e.g. ["78",["3+78"]]). Defaults to ["78", ALL_5G_BANDS].
+        verbose (bool): Whether messages should be printed to stdout
 
     Returns:
         bool: Success
     """
     next_5g_band_set = 0
 
-    for attempt in range(0, 10):
-        log.info(f"Attempt {attempt+1} / {10} to obtain target PCI")
+    for attempt in range(0, 30):
+        if verbose:
+            log.info(f"Attempt {attempt+1} / {10} to obtain target PCI")
         if processed_data["5G"]["PCI"]["str_value"] == target_pci:
-            log.info(f"PCI already set to target {target_pci}")
+            if verbose:
+                log.info(f"PCI already set to target {target_pci}")
             return True
         else:
             if next_5g_band_set == 0:
@@ -80,23 +83,26 @@ def force_5g_pci_selection(
                 router_ip=router_ip,
                 auth_cookies=auth_cookies,
                 bands=bands_5g[next_5g_band_set],
+                verbose=False,
             )
 
-            # log.info(f"Setting 5G bands to {bands_5g[next_5g_band_set]}")
-            log.info(f"⌛ Waiting 20 seconds before checking current PCI")
+            if verbose:
+                log.info(f"⌛ Waiting 20 seconds before checking current PCI")
             time.sleep(20)
 
             raw_data = get_signal_data(router_ip=router_ip, auth_cookies=auth_cookies)
             new_processed_data = process_data(raw_data)
 
             if not new_processed_data["5G"]["PCI"]["str_value"] == target_pci:
-                log.info(
-                    f'🛑 Not achieved target PCI - current is {new_processed_data["5G"]["PCI"]["str_value"]}'
-                )
+                if verbose:
+                    log.info(
+                        f'🛑 Not achieved target PCI - current is {new_processed_data["5G"]["PCI"]["str_value"]}'
+                    )
             else:
-                log.info(
-                    f'🟢 Achieved target PCI {new_processed_data["5G"]["PCI"]["str_value"]}'
-                )
+                if verbose:
+                    log.info(
+                        f'🟢 Achieved target PCI {new_processed_data["5G"]["PCI"]["str_value"]}'
+                    )
                 return True
 
     return False

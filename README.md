@@ -21,13 +21,21 @@ The table below summarizes the features currently implemented and those being wo
 | 4G signal data             | READ  | ✅     |
 | 5G signal data             | READ  | ✅     |
 | Carrier Aggregation status | READ  | ✅     |
-| SMS                        | READ  | ✅     |
+| SMS view                   | READ  | ✅     |
 | 4G band locking            | WRITE | WIP    |
 | 5G band locking            | WRITE | ✅     |
 | Cell locking               | WRITE | WIP    |
 
+## Compatibility
+
+| Firmware                | Operator | Status               |
+| ----------------------- | -------- | -------------------- |
+| BD_UKH3GMC801AV1.0.0B15 | Three UK | All features working |
+
 ## Getting Started
 
 ### Installation
+
+## Install Poetry
 
 COMING SOON

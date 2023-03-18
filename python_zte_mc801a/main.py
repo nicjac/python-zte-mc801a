@@ -77,42 +77,51 @@ def force_5g_pci(
         help="Second set of bands to alternative between (comma separated, e.g. 1,3,78)",
         metavar="TEXT",
     ),
+    router_ip: str = typer.Option(None),
+    password: str = typer.Option(None),
 ):
-    config = check_config()
-    cookies = get_auth_cookies(config["router_ip"], config["password"])
-    data = get_signal_data(config["router_ip"], cookies)
-    processed_data = process_data(raw_data=data)
+    config = check_config(router_ip, password)
 
-    force_5g_pci_selection(
-        target_pci=target_pci,
-        processed_data=processed_data,
-        router_ip=config["router_ip"],
-        auth_cookies=cookies,
-        bands_5g=[band_set_1, band_set_2],
-    )
+    if config:
+        cookies = get_auth_cookies(config["router_ip"], config["password"])
+        data = get_signal_data(config["router_ip"], cookies)
+        processed_data = process_data(raw_data=data)
+
+        force_5g_pci_selection(
+            target_pci=target_pci,
+            processed_data=processed_data,
+            router_ip=config["router_ip"],
+            auth_cookies=cookies,
+            bands_5g=[band_set_1, band_set_2],
+        )
 
 
 @app.command()
-def data():
+def data(router_ip: str = typer.Option(None), password: str = typer.Option(None)):
     """Show signal data"""
-    config = check_config()
-    cookies = get_auth_cookies(config["router_ip"], config["password"])
-    data = get_signal_data(config["router_ip"], cookies)
-    processed_data = process_data(raw_data=data)
-    pprint(processed_data)
+    config = check_config(router_ip, password)
+
+    if config:
+        cookies = get_auth_cookies(config["router_ip"], config["password"])
+        data = get_signal_data(config["router_ip"], cookies)
+        processed_data = process_data(raw_data=data)
+        pprint(processed_data)
 
 
 @app.command()
 def live(
     viz: LIVE_VISUALIZATIONS = typer.Option(
         LIVE_VISUALIZATIONS.SMS, case_sensitive=False
-    )
+    ),
+    router_ip: str = typer.Option(None),
+    password: str = typer.Option(None),
 ):
     """Show a live dashboard"""
 
-    config = check_config()
+    config = check_config(router_ip, password)
 
-    show_live(config, viz=viz)
+    if config:
+        show_live(config, viz=viz)
 
 
 if __name__ == "__main__":

@@ -106,7 +106,9 @@ def get_latest_sms_messages(router_ip, auth_cookies, n=3) -> list:
     return messages
 
 
-def set_5g_band(router_ip: str, auth_cookies: dict, bands: str) -> bool:
+def set_5g_band(
+    router_ip: str, auth_cookies: dict, bands: str, verbose: bool = False
+) -> bool:
     raw_data = get_signal_data(router_ip=router_ip, auth_cookies=auth_cookies)
     ad = get_ad_value(raw_data)
 
@@ -142,8 +144,10 @@ def set_5g_band(router_ip: str, auth_cookies: dict, bands: str) -> bool:
         and "result" in r.json().keys()
         and r.json()["result"] == "success"
     ):
-        log.info(f"Successfully set 5G bands to {bands}")
+        if verbose:
+            log.info(f"Successfully set 5G bands to {bands}")
         return True
     else:
-        log.error(f"Error setting 5G band to {bands}: {r.content}")
+        if verbose:
+            log.error(f"Error setting 5G band to {bands}: {r.content}")
         return False

@@ -1,5 +1,9 @@
 # python-zte-mc801a
 
+Python client for the ZTE MC801a router.
+
+![Python ZTE MC801a Live View](docs/images/live-view.png?raw=true "Live View")
+
 ## What is this?
 
 This is a library and a simple CLI client application to interact with the ZTE MC801A router. The idea is to provide read access to the data made available by the firmware and, in the future, provide functionality to carry out actions such as cell or band locking.
@@ -50,6 +54,12 @@ pip install git+https://github.com/nicjac/python-zte-mc801a
 
 ### Using the CLI client
 
+In general, the `--help` option will provide more information about client and subcommand usage. For example:
+
+```bash
+python-zte-mc801a --help
+```
+
 The client requires two parameters to work: the router ip and its admin password. All commands accept `--router-ip` and `--password` options. For example, the following command will return processed data from the router:
 
 ```bash
@@ -60,4 +70,10 @@ Alternatively, one can get the client to create a settings file to persist those
 
 ```bash
 python-zte-mc801a setup
+```
+
+The client provides a live view of key router data:
+
+```bash
+python-zte-mc801a live --router-ip 192.168.0.1 --password ADMIN_PASSWORD
 ```

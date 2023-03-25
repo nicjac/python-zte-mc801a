@@ -18,7 +18,7 @@ def check_config(router_ip: str, password: str) -> dict:
         return {"router_ip": router_ip, "password": password}
     elif router_ip or password:
         log.info("Both router-ip and password CLI options must be provided")
-    elif Path("settings.json").exists():
+    elif Path("settings.yml").exists():
         with open("settings.yml", "r") as f:
             config = yaml.load(f, Loader=yaml.SafeLoader)
 

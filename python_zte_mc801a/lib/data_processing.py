@@ -71,7 +71,7 @@ def process_ca_4g_data(data: dict) -> list:
                 [
                     chan_details[1],
                     chan_details[4],
-                    f"{chan_details[0]} ({round(float(chan_details[5]))}Mhz)",
+                    f"{chan_details[3]} ({round(float(chan_details[5]))}Mhz)",
                 ]
             )
 

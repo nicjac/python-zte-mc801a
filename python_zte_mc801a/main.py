@@ -97,15 +97,23 @@ def force_5g_pci(
 
 
 @app.command()
-def data(router_ip: str = typer.Option(None), password: str = typer.Option(None)):
+def data(
+    raw: bool = typer.Option(False),
+    router_ip: str = typer.Option(None),
+    password: str = typer.Option(None),
+):
     """Show signal data"""
     config = check_config(router_ip, password)
 
     if config:
         cookies = get_auth_cookies(config["router_ip"], config["password"])
         data = get_signal_data(config["router_ip"], cookies)
-        processed_data = process_data(raw_data=data)
-        pprint(processed_data)
+
+        if not raw:
+            processed_data = process_data(raw_data=data)
+            pprint(processed_data)
+        else:
+            pprint(data)
 
 
 @app.command()
